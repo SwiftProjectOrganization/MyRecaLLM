@@ -13,6 +13,7 @@ struct CategoryView {
     @State private var showingAddCategory = false
     @State private var isEditing = false
     @State private var selection = Set<PersistentIdentifier>()
+    @State private var categoryToUpdate: Category?
 }
 
 extension CategoryView: View {
@@ -35,7 +36,7 @@ extension CategoryView: View {
                             ForEach(categories) { category in
                                 NavigationLink(destination: TopicView(category: category)) {
                                     Text((category.title?.isEmpty == false ? category.title! : "Untitled"))
-                                        .padding(10)
+                                        .padding(3)
                                         .glassEffect(.clear.tint(.blue).interactive(), in: .buttonBorder)
                                 }
                                 .tag(category.persistentModelID)
@@ -52,6 +53,9 @@ extension CategoryView: View {
                     .sheet(isPresented: $showingAddCategory) {
                         AddCategoryView()
                     }
+                    .sheet(item: $categoryToUpdate) { category in
+                        CategoryUpdateView(category: category)
+                    }
                     .toolbar {
                       ToolbarItemGroup(placement: .topBarTrailing) {
                         Button(isEditing ? "Done" : "Edit") {
@@ -62,7 +66,16 @@ extension CategoryView: View {
                         }
                       }
                       ToolbarItemGroup(placement: .topBarTrailing) {
-                            Button("Add Category") { addCategory() }
+                            Menu("Update") {
+                                ForEach(categories) { category in
+                                    Button(category.title?.isEmpty == false ? category.title! : "Untitled") {
+                                        categoryToUpdate = category
+                                    }
+                                }
+                            }
+                            .buttonStyle(.glass)
+                            .disabled(isEditing || categories.isEmpty)
+                            Button("Add") { addCategory() }
                                 .buttonStyle(.glass)
                                 .disabled(isEditing)
                             if isEditing {
@@ -77,14 +90,14 @@ extension CategoryView: View {
                 Spacer()
                 GlassEffectContainer {
                     HStack(spacing: 24) {
-                        Button("TBD", systemImage: "square.and.arrow.up.fill") { }
+                        Button("Start\nrecall") { }
                             .padding(10)
                             .buttonStyle(.glass)
-                        Button("Download", systemImage: "square.and.arrow.down") { }
+                        Button("Download\ncategories") { }
                             .padding(10)
                             .buttonStyle(.glass)
                             .tint(Color.green)
-                        Button("Upload", systemImage: "square.and.arrow.up") { }
+                        Button("Upload\ncategories") { }
                             .padding(10)
                             .buttonStyle(.glass)
                             .tint(.blue)
