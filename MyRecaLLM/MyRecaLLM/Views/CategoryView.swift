@@ -14,6 +14,7 @@ struct CategoryView {
     @State private var isEditing = false
     @State private var selection = Set<PersistentIdentifier>()
     @State private var categoryToUpdate: Category?
+    @State private var showingHelp = false
 }
 
 extension CategoryView: View {
@@ -29,7 +30,11 @@ extension CategoryView: View {
                         Section {
                             Text("Categories")
                         } header: {
-                            Text("Path").font(.headline)
+                            Text("Path")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.primary)
+                                .frame(maxWidth: .infinity, alignment: .center)
                         }
 //                        Toggle("Increase opacity", isOn: $isOpacityEnabled)
                         Section {
@@ -43,7 +48,11 @@ extension CategoryView: View {
                             }
                             .onDelete(perform: deleteCategories)
                         } header: {
-                            Text("Categories").font(.headline)
+                            Text("Categories")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.primary)
+                                .frame(maxWidth: .infinity, alignment: .center)
                         }
                     }
                     .opacity(isOpacityEnabled ? 0.95 : 1)
@@ -56,8 +65,14 @@ extension CategoryView: View {
                     .sheet(item: $categoryToUpdate) { category in
                         CategoryUpdateView(category: category)
                     }
+                    .sheet(isPresented: $showingHelp) {
+                        CategoryHelpView()
+                    }
                     .toolbar {
                       ToolbarItemGroup(placement: .topBarTrailing) {
+                        Button("Help", systemImage: "questionmark.circle") {
+                            showingHelp = true
+                        }
                         Button(isEditing ? "Done" : "Edit") {
                           withAnimation {
                             isEditing.toggle()

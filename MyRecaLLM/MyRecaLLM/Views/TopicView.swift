@@ -13,6 +13,8 @@ struct TopicView {
     @State private var showingAddTopic = false
     @State private var isEditing = false
     @State private var selection = Set<PersistentIdentifier>()
+    @State private var topicToUpdate: Topic?
+    @State private var showingHelp = false
 }
 
 extension TopicView: View {
@@ -31,7 +33,11 @@ extension TopicView: View {
                     Section {
                         LabeledContent("Category", value: category.title ?? "—")
                     } header: {
-                        Text("Path").font(.headline)
+                        Text("Path")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
 //                    Toggle("Increase opacity", isOn: $isOpacityEnabled)
                     Section {
@@ -45,7 +51,11 @@ extension TopicView: View {
                         }
                         .onDelete(perform: deleteTopics)
                     } header: {
-                        Text("Topics").font(.headline)
+                        Text("Topics")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
 //                .opacity(isOpacityEnabled ? 0.75 : 0.5)
@@ -55,14 +65,32 @@ extension TopicView: View {
                 .sheet(isPresented: $showingAddTopic) {
                     AddTopicView(category: category)
                 }
+                .sheet(item: $topicToUpdate) { topic in
+                    TopicUpdateView(topic: topic)
+                }
+                .sheet(isPresented: $showingHelp) {
+                    TopicHelpView()
+                }
                 .toolbar {
                     ToolbarItemGroup(placement: .navigation) {
+                        Button("Help", systemImage: "questionmark.circle") {
+                            showingHelp = true
+                        }
                         Button(isEditing ? "Done" : "Edit") {
                             withAnimation {
                                 isEditing.toggle()
                                 if !isEditing { selection.removeAll() }
                             }
                         }
+                        Menu("Update") {
+                            ForEach(topics) { topic in
+                                Button(topic.title?.isEmpty == false ? topic.title! : "Untitled") {
+                                    topicToUpdate = topic
+                                }
+                            }
+                        }
+                        .buttonStyle(.glass)
+                        .disabled(isEditing || topics.isEmpty)
                         Button("Add Topic") { addTopic() }
                             .buttonStyle(.glass)
                             .disabled(isEditing)

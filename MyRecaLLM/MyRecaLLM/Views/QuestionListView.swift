@@ -12,6 +12,8 @@ struct QuestionListView: View {
     @State private var showingAddItem = false
     @State private var isEditing = false
     @State private var selection = Set<PersistentIdentifier>()
+    @State private var itemToUpdate: Item?
+    @State private var showingHelp = false
 
     private var items: [Item] {
         subTopic.questions ?? []
@@ -24,7 +26,11 @@ struct QuestionListView: View {
                 LabeledContent("Topic", value: subTopic.topic?.title ?? "—")
                 LabeledContent("SubTopic", value: subTopic.title ?? "—")
             } header: {
-                Text("Path").font(.headline)
+                Text("Path")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
             Section {
                 ForEach(items) { item in
@@ -40,7 +46,11 @@ struct QuestionListView: View {
                 }
                 .onDelete(perform: deleteItems)
             } header: {
-                Text("Questions").font(.headline)
+                Text("Questions")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
         }
 #if os(iOS) || os(visionOS)
@@ -49,14 +59,33 @@ struct QuestionListView: View {
         .sheet(isPresented: $showingAddItem) {
             AddItemView(subTopic: subTopic)
         }
+        .sheet(item: $itemToUpdate) { item in
+            QuestionUpdateView(item: item)
+        }
+        .sheet(isPresented: $showingHelp) {
+            QuestionHelpView()
+        }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                Button("Help", systemImage: "questionmark.circle") {
+                    showingHelp = true
+                }
                 Button(isEditing ? "Done" : "Edit") {
                     withAnimation {
                         isEditing.toggle()
                         if !isEditing { selection.removeAll() }
                     }
                 }
+                Menu("Update") {
+                    ForEach(items) { item in
+                        let label = (item.question ?? "").isEmpty ? "New question" : (item.question ?? "")
+                        Button(label) {
+                            itemToUpdate = item
+                        }
+                    }
+                }
+                .buttonStyle(.glass)
+                .disabled(isEditing || items.isEmpty)
                 Button("Add Question") { addItem() }
                     .buttonStyle(.glass)
                     .disabled(isEditing)

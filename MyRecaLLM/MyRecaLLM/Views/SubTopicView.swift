@@ -13,6 +13,8 @@ struct SubTopicView {
     @State private var showingAddSubTopic = false
     @State private var isEditing = false
     @State private var selection = Set<PersistentIdentifier>()
+    @State private var subTopicToUpdate: SubTopic?
+    @State private var showingHelp = false
 }
 
 extension SubTopicView: View {
@@ -32,7 +34,11 @@ extension SubTopicView: View {
                         LabeledContent("Category", value: topic.category?.title ?? "—")
                         LabeledContent("Topic", value: topic.title ?? "—")
                     } header: {
-                        Text("Path").font(.headline)
+                        Text("Path")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
 //                    Toggle("Increase opacity", isOn: $isOpacityEnabled)
                     Section {
@@ -46,7 +52,11 @@ extension SubTopicView: View {
                         }
                         .onDelete(perform: deleteSubTopics)
                     } header: {
-                        Text("SubTopics").font(.headline)
+                        Text("SubTopics")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
                 .opacity(isOpacityEnabled ? 0.75 : 0.5)
@@ -56,14 +66,32 @@ extension SubTopicView: View {
                 .sheet(isPresented: $showingAddSubTopic) {
                     AddSubTopicView(topic: topic)
                 }
+                .sheet(item: $subTopicToUpdate) { subTopic in
+                    SubTopicUpdateView(subTopic: subTopic)
+                }
+                .sheet(isPresented: $showingHelp) {
+                    SubTopicHelpView()
+                }
                 .toolbar {
                     ToolbarItemGroup(placement: .navigation) {
+                        Button("Help", systemImage: "questionmark.circle") {
+                            showingHelp = true
+                        }
                         Button(isEditing ? "Done" : "Edit") {
                             withAnimation {
                                 isEditing.toggle()
                                 if !isEditing { selection.removeAll() }
                             }
                         }
+                        Menu("Update") {
+                            ForEach(subTopics) { subTopic in
+                                Button(subTopic.title?.isEmpty == false ? subTopic.title! : "Untitled") {
+                                    subTopicToUpdate = subTopic
+                                }
+                            }
+                        }
+                        .buttonStyle(.glass)
+                        .disabled(isEditing || subTopics.isEmpty)
                         Button("Add SubTopic") { addSubTopic() }
                             .buttonStyle(.glass)
                             .disabled(isEditing)
