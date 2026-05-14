@@ -15,6 +15,7 @@ struct SubTopicView {
     @State private var selection = Set<PersistentIdentifier>()
     @State private var subTopicToUpdate: SubTopic?
     @State private var showingHelp = false
+    @State private var navigateToExport = false
 }
 
 extension SubTopicView: View {
@@ -114,15 +115,20 @@ extension SubTopicView: View {
                         .padding(10)
                         .buttonStyle(.glass)
                         .tint(Color.green)
-                    Button("Upload", systemImage: "square.and.arrow.up") { }
-                        .padding(10)
-                        .buttonStyle(.glass)
-                        .tint(.blue)
+                    Button("Export", systemImage: "square.and.arrow.up") {
+                        navigateToExport = true
+                    }
+                    .padding(10)
+                    .buttonStyle(.glass)
+                    .tint(.blue)
                 }
             }
             .tint(.red)
         }
         .opacity(1.0)
+        .navigationDestination(isPresented: $navigateToExport) {
+            ExportView(scope: .subTopics(parent: topic))
+        }
     }
 
     private func addSubTopic() {

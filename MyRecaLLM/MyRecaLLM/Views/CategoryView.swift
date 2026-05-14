@@ -15,6 +15,7 @@ struct CategoryView {
     @State private var selection = Set<PersistentIdentifier>()
     @State private var categoryToUpdate: Category?
     @State private var showingHelp = false
+    @State private var navigateToExport = false
 }
 
 extension CategoryView: View {
@@ -112,7 +113,7 @@ extension CategoryView: View {
                             .padding(10)
                             .buttonStyle(.glass)
                             .tint(Color.green)
-                        Button("Upload\ncategories") { }
+                        Button("Export\ncategories") { navigateToExport = true }
                             .padding(10)
                             .buttonStyle(.glass)
                             .tint(.blue)
@@ -121,6 +122,9 @@ extension CategoryView: View {
                 .tint(.red)
             }
             .opacity(1.0)
+            .navigationDestination(isPresented: $navigateToExport) {
+                ExportView(scope: .categories)
+            }
         }
     }
 

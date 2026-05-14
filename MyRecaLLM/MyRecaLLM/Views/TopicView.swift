@@ -15,6 +15,7 @@ struct TopicView {
     @State private var selection = Set<PersistentIdentifier>()
     @State private var topicToUpdate: Topic?
     @State private var showingHelp = false
+    @State private var navigateToExport = false
 }
 
 extension TopicView: View {
@@ -113,15 +114,20 @@ extension TopicView: View {
                         .padding(10)
                         .buttonStyle(.glass)
                         .tint(Color.green)
-                    Button("Upload", systemImage: "square.and.arrow.up") { }
-                        .padding(10)
-                        .buttonStyle(.glass)
-                        .tint(.blue)
+                    Button("Export", systemImage: "square.and.arrow.up") {
+                        navigateToExport = true
+                    }
+                    .padding(10)
+                    .buttonStyle(.glass)
+                    .tint(.blue)
                 }
             }
             .tint(.red)
         }
         .opacity(1.0)
+        .navigationDestination(isPresented: $navigateToExport) {
+            ExportView(scope: .topics(parent: category))
+        }
     }
 
     private func addTopic() {
